@@ -1,95 +1,72 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import DisplayFood from './DisplayFood';
-
-
+import DropDown from './DropDown';
 export default class FoodForm extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {value: '', found: 0, food: ['Banana', 'Apple', 'Strawberry'],
-  num_of_food: 3, properties: [
-    {
-      name: "Banana",
-      amount: "100 grams",
-      calories: "89",
-      fat: "0.3g",
-      cholestrol: "0 mg",
-      sodium: "1 mg",
-      potassium: "358 mg",
-      carbohydrates: "23g"
-    },
-    {
-      name: "Apple",
-      amount: "100 grams",
-      calories: "52",
-      fat: "0.2g",
-      cholestrol: "0 mg",
-      sodium: "1 mg",
-      potassium: "107 mg",
-      carbohydrates: "14g"
-    },
-    {
-      name: "Strawberry",
-      amount: "100 grams",
-      calories: "33",
-      fat: "0.3g",
-      cholestrol: "0 mg",
-      sodium: "1 mg",
-      potassium: "153 mg",
-      carbohydrates: "8"
-    }
-  ], result: ''};
+    this.state = {value: '', found: 0,
+  num_of_food: 3, candidates: [], result: ''};
 
-
+    this.getItem = this.getItem.bind(this);
     this.searchItem = this.searchItem.bind(this);
-    this.fillItem = this.fillItem.bind(this);
+    this.resetItems = this.resetItems.bind(this);
   }
 
-  searchItem(event) {
-    //prevent button click from submitting form
+  getItem(event){
     event.preventDefault();
-
-    // input
+    var newcandidates = [];
     const input_value = document.getElementById("addInput");
     const form = document.getElementById("inputFoodForm");
-    var counter = 0;
-    var found = 0;
-    var list = this.state.food;
-    var properties = this.state.properties;
-    //check whether the input is ""
-    if (input_value.value != ""){
-      while (found === 0 && counter < this.state.num_of_food){
-        // looking at whether it is in the list
-        if (input_value.value.toLowerCase() === list[counter].toLowerCase()){
-          found = 1
-          this.setState({
-            result: properties[counter]
-          });
-        }
-        counter += 1;
-      }
+
+
+    this.searchItem(input_value);
+
+
+
+
+  }
+  searchItem(input_value) {
+    //prevent button click from submitting form
+    var test = [];
+    var products = null;
+    var url = 'https://api.nal.usda.gov/ndb/search/?format=json&q=';
+    console.log(input_value);
+    url += input_value.value;
+    url += '&sort=n&max=10&offset=0&api_key=DEMO_KEY';
+    console.log(url);
+    fetch(url)
+    .then(response => {
+      return response.json();
+    }).then(myJson => {
+      let candidates = myJson.list.item.map((data) => {
+        return(
+          <div>
+            {data.ndbno}
+            {data.name}
+            {data.ds}
+
+          </div>
+        )
+      })
       this.setState({
-            found: found
-          });
-      this.setState({value: input_value.value});
-      input_value.classList.remove("is-danger");
-      form.reset();
-
-
-
-    }
-    else{
-      input_value.classList.add("is-danger");
-      this.setState({
-        result: ''
+        candidates: myJson.list.item.name
       });
-    }
+      console.log(this.state.candidates);
+    })
+
 
   }
 
-  fillItem(found){
+    // Send request
 
+  resetItems(){
+    const form = document.getElementById("inputFoodForm");
+    this.setState({
+      result: "",
+      found: 2
+    })
+    form.reset();
   }
 
 
@@ -106,16 +83,18 @@ export default class FoodForm extends React.Component {
           id="addInput"
           placeholder="Type to find out more!"
           />
-        <button className="button is-info" onClick={this.searchItem}>
+        <button className="button is-info" onClick={this.getItem}>
           Submit
         </button>
       </form>
       </section>
-      <section className="outputSection">
-        <DisplayFood value={this.state.result} found={this.state.found}>
-        </DisplayFood>
+      <section className="display-section">
+        <div>
+          {this.state.candidates}
+        </div>
       </section>
       </div>
+
     )
   }
 }
