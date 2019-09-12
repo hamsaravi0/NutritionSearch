@@ -1,73 +1,75 @@
 import React from 'react';
-import DisplayFood from './DisplayFood';
+//import DisplayFood from './DisplayFood';
 import DropDown from './DropDown';
+import './FoodForm.css';
 export default class FoodForm extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {value: '', found: 0,
-  num_of_food: 3, candidates: [], result: ''};
+    this.state = {value: '', found: 0, candidates: [], dropStatus: false};
 
     this.getItem = this.getItem.bind(this);
     this.searchItem = this.searchItem.bind(this);
-    this.resetItems = this.resetItems.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+  }
+
+  handleChange(){
+    const input_value = document.getElementById("addInput");
+    console.log(input_value);
+    if (input_value.value.length >= 5){
+      this.getItem();
+    }
+
   }
 
   getItem(event){
-    event.preventDefault();
-    var newcandidates = [];
     const input_value = document.getElementById("addInput");
     const form = document.getElementById("inputFoodForm");
 
 
     this.searchItem(input_value);
 
-
+    // after that function, the list of possible candidates will get filled
 
 
   }
   searchItem(input_value) {
-    //prevent button click from submitting form
-    var test = [];
-    var products = null;
+    // prevent button click from submitting form
     var url = 'https://api.nal.usda.gov/ndb/search/?format=json&q=';
-    console.log(input_value);
     url += input_value.value;
-    url += '&sort=n&max=10&offset=0&api_key=DEMO_KEY';
-    console.log(url);
+    url += '&sort=n&max=10&offset=0&api_key=GvRDLc3LZmvNTaVyY1tXvIbewytToRsi2IXpjiXW';
+
     fetch(url)
     .then(response => {
       return response.json();
     }).then(myJson => {
-      let candidates = myJson.list.item.map((data) => {
-        return(
-          <div>
-            {data.ndbno}
-            {data.name}
-            {data.ds}
+      var newCandidates = []
+      console.log(myJson);
+      if (!myJson.errors){
+        var possibilities = myJson.list.item;
+        for(var i=0; i < possibilities.length; i++){
+           var item = possibilities[i];
+           var name = item['name'];
+           var ndbno = item['ndbno'];
+           var group = item['group'];
+           newCandidates[name] = [ndbno, group];
 
-          </div>
-        )
-      })
+        }
+      }
+
+
       this.setState({
-        candidates: myJson.list.item.name
+        candidates: newCandidates,
+        dropStatus: (Object.keys(newCandidates).length !== 0)
+
       });
-      console.log(this.state.candidates);
+      console.log(this.state.dropStatus);
     })
 
 
   }
 
-    // Send request
 
-  resetItems(){
-    const form = document.getElementById("inputFoodForm");
-    this.setState({
-      result: "",
-      found: 2
-    })
-    form.reset();
-  }
 
 
 
@@ -75,24 +77,25 @@ export default class FoodForm extends React.Component {
 
     return (
       <div className="searchSection">
-      <section className="section">
-        <form className="form" id="inputFoodForm">
-       <input
+
+      <div className="container">
+      <form className="form" id="inputFoodForm">
+        <input
           type="text"
           className="input"
           id="addInput"
           placeholder="Type to find out more!"
-          />
-        <button className="button is-info" onClick={this.getItem}>
-          Submit
-        </button>
-      </form>
-      </section>
-      <section className="display-section">
-        <div>
-          {this.state.candidates}
+          onChange={this.handleChange}
+        />
+        </form>
+        <div className="dropdown">
+          <DropDown candidates={this.state.candidates} status={this.state.dropStatus}/>
         </div>
-      </section>
+        <button className="button is-info" onClick={this.getItem}>
+          enter
+        </button>
+
+      </div>
       </div>
 
     )
