@@ -2,6 +2,8 @@ import React from 'react';
 //import DisplayFood from './DisplayFood';
 import DropDown from './DropDown';
 import './FoodForm.css';
+
+
 export default class FoodForm extends React.Component {
 
   constructor(props) {
@@ -11,15 +13,23 @@ export default class FoodForm extends React.Component {
     this.getItem = this.getItem.bind(this);
     this.searchItem = this.searchItem.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleBoxClick = this.handleBoxClick.bind(this);
   }
 
   handleChange(){
     const input_value = document.getElementById("addInput");
-    console.log(input_value);
-    if (input_value.value.length >= 5){
+    if (input_value.value.length >= 3){
       this.getItem();
     }
 
+  }
+
+  handleBoxClick(){
+    console.log("handleBoxClick");
+    var newState = !this.state.dropStatus;
+    this.setState({
+      dropStatus : newState
+    })
   }
 
   getItem(event){
@@ -37,14 +47,13 @@ export default class FoodForm extends React.Component {
     // prevent button click from submitting form
     var url = 'https://api.nal.usda.gov/ndb/search/?format=json&q=';
     url += input_value.value;
-    url += '&sort=n&max=10&offset=0&api_key=GvRDLc3LZmvNTaVyY1tXvIbewytToRsi2IXpjiXW';
+    url += '&sort=n&max=20&offset=0&api_key=GvRDLc3LZmvNTaVyY1tXvIbewytToRsi2IXpjiXW';
 
     fetch(url)
     .then(response => {
       return response.json();
     }).then(myJson => {
-      var newCandidates = []
-      console.log(myJson);
+      var newCandidates = [];
       if (!myJson.errors){
         var possibilities = myJson.list.item;
         for(var i=0; i < possibilities.length; i++){
@@ -63,7 +72,6 @@ export default class FoodForm extends React.Component {
         dropStatus: (Object.keys(newCandidates).length !== 0)
 
       });
-      console.log(this.state.dropStatus);
     })
 
 
@@ -78,24 +86,23 @@ export default class FoodForm extends React.Component {
     return (
       <div className="searchSection">
 
-      <div className="container">
-      <form className="form" id="inputFoodForm">
-        <input
-          type="text"
-          className="input"
-          id="addInput"
-          placeholder="Type to find out more!"
-          onChange={this.handleChange}
-        />
-        </form>
-        <div className="dropdown">
-          <DropDown candidates={this.state.candidates} status={this.state.dropStatus}/>
-        </div>
-        <button className="button is-info" onClick={this.getItem}>
-          enter
-        </button>
+        <div className="container">
+          <form className="form" id="inputFoodForm">
+            <input
+              type="text"
+              className="input"
+              id="addInput"
+              placeholder="Type to find out more!"
+              onChange={this.handleChange}
+              onClick={this.handleBoxClick}
+            />
+          </form>
+          <div>
+            <DropDown candidates={this.state.candidates} status={this.state.dropStatus}/>
+          </div>
 
-      </div>
+        </div>
+
       </div>
 
     )
