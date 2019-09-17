@@ -16,6 +16,7 @@ export default class FoodForm extends React.Component {
     this.handleBoxClick = this.handleBoxClick.bind(this);
   }
 
+
   handleChange(){
     const input_value = document.getElementById("addInput");
     if (input_value.value.length >= 3){
@@ -25,7 +26,6 @@ export default class FoodForm extends React.Component {
   }
 
   handleBoxClick(){
-    console.log("handleBoxClick");
     var newState = !this.state.dropStatus;
     this.setState({
       dropStatus : newState
